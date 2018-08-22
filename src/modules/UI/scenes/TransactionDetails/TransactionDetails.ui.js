@@ -7,13 +7,14 @@ import React, { Component } from 'react'
 import { Animated, Easing, Keyboard, ScrollView, TextInput, TouchableOpacity, View } from 'react-native'
 import { sprintf } from 'sprintf-js'
 import { AdvancedTransactionDetailsModal } from './components/AdvancedDetailsModal/AdvancedTransactionDetailsModal.ui.js'
+import { scale } from '../../../../lib/scaling.js'
 
 import s from '../../../../locales/strings.js'
 import THEME from '../../../../theme/variables/airbitz'
 import { PLATFORM } from '../../../../theme/variables/platform.js'
 import type { GuiContact, GuiWallet } from '../../../../types.js'
 import * as UTILS from '../../../utils'
-import FormattedText from '../../components/FormattedText/index'
+import FormattedText from '../../components/FormattedTextScaled'
 import Gradient from '../../components/Gradient/Gradient.ui'
 import PayeeIcon from '../../components/PayeeIcon/PayeeIcon.ui.js'
 import SafeAreaView from '../../components/SafeAreaView'
@@ -465,8 +466,8 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
                     width: '100%',
                     backgroundColor: THEME.COLORS.WHITE,
                     position: 'absolute',
-                    top: 4,
-                    height: PLATFORM.usableHeight,
+                    top: scale(4),
+                    height: scale(PLATFORM.usableHeight),
                     zIndex: 99999
                   }
                 ]}

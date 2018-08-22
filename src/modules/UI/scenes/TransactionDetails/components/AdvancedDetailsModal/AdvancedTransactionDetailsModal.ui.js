@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react'
 import { TouchableOpacity, Linking } from 'react-native'
-import Text from '../../../../components/FormattedText/FormattedText.ui.js'
+import Text from '../../../../components/FormattedTextScaled'
 import { InteractiveModal } from '../../../../components/Modals/InteractiveModal/InteractiveModal.ui.js'
 import { Icon } from '../../../../components/Icon/Icon.ui.js'
 import * as Constants from '../../../../../../constants/indexConstants.js'
@@ -45,7 +45,7 @@ export class AdvancedTransactionDetailsModal extends Component<AdvancedTransacti
         </InteractiveModal.Title>
 
         <InteractiveModal.Body>
-          <InteractiveModal.Description style={{textAlign: 'center'}}>{this.props.txid}</InteractiveModal.Description>
+          <InteractiveModal.Description style={{textAlign: 'center'}}><Text>{this.props.txid}</Text></InteractiveModal.Description>
         </InteractiveModal.Body>
 
         <InteractiveModal.Footer>

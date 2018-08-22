@@ -10,7 +10,7 @@ import { sprintf } from 'sprintf-js'
 import s from '../../../../locales/strings.js'
 import THEME from '../../../../theme/variables/airbitz'
 import * as UTILS from '../../../utils'
-import { PrimaryButton } from '../../components/Buttons'
+import { PrimaryButton } from '../../components/Buttons/ButtonsScaled.ui'
 import FormattedText from '../../components/FormattedText'
 import styles from './style'
 
