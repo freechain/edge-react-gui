@@ -1,12 +1,13 @@
 // @flow
 
 import React, { Component } from 'react'
-import { TouchableOpacity, Linking } from 'react-native'
-import Text from '../../../../components/FormattedTextScaled'
-import { InteractiveModal } from '../../../../components/Modals/InteractiveModal/InteractiveModal.ui.js'
-import { Icon } from '../../../../components/Icon/Icon.ui.js'
+import { Linking, TouchableOpacity } from 'react-native'
+
 import * as Constants from '../../../../../../constants/indexConstants.js'
 import s from '../../../../../../locales/strings.js'
+import Text from '../../../../components/FormattedTextScaled'
+import { Icon } from '../../../../components/Icon/Icon.ui.js'
+import { InteractiveModal } from '../../../../components/Modals/InteractiveModal/InteractiveModal.ui.js'
 import styles, { activeOpacity } from '../../style.js'
 
 export type AdvancedTransactionDetailsModalOwnProps = {
