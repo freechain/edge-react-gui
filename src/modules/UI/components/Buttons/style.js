@@ -1,6 +1,7 @@
 // @flow
 
 import { StyleSheet } from 'react-native'
+import { scale } from '../../../../lib/scaling.js'
 
 import THEME from '../../../../theme/variables/airbitz'
 
@@ -16,6 +17,11 @@ export const rawStyles = {
     fontFamily: THEME.FONTS.DEFAULT,
     fontSize: 18,
     lineHeight: 18
+  },
+  buttonTextScaled: {
+    fontFamily: THEME.FONTS.DEFAULT,
+    fontSize: scale(18),
+    lineHeight: scale(18)
   },
   text: {
     fontFamily: THEME.FONTS.DEFAULT
