@@ -1,13 +1,13 @@
 // @flow
 
-import type { EdgeContext, EdgeContextCallbacks, EdgeCorePluginFactory, EdgeCurrencyPlugin } from 'edge-core-js'
+import { makeReactNativeFolder } from 'disklet'
+import type { DiskletFolder, EdgeContext, EdgeContextCallbacks, EdgeCorePluginFactory, EdgeCurrencyPlugin } from 'edge-core-js'
 import {
   bitcoinCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory,
   bitcoingoldCurrencyPluginFactory,
   dashCurrencyPluginFactory,
   digibyteCurrencyPluginFactory,
-  // dogecoinCurrencyPluginFactory,
   feathercoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory,
   qtumCurrencyPluginFactory,
@@ -48,11 +48,13 @@ import ExchangeConnector from '../connectors/scene/CryptoExchangeSceneConnector'
 import EdgeLoginSceneConnector from '../connectors/scene/EdgeLoginSceneConnector'
 import OtpSettingsSceneConnector from '../connectors/scene/OtpSettingsSceneConnector.js'
 import PasswordRecoveryConnector from '../connectors/scene/PasswordRecoveryConnector.js'
-import SpendingLimitsConnector from './UI/scenes/SpendingLimits/SpendingLimitsConnector.js'
 import TransactionsExportSceneConnector from '../connectors/scene/TransactionsExportSceneConnector'
 import * as Constants from '../constants/indexConstants'
 import { setIntlLocale } from '../locales/intl'
 import s, { selectLocale } from '../locales/strings.js'
+import { LoadingScene } from '../modules/UI/components/Loading/LoadingScene.ui.js'
+import { ifLoggedIn } from '../modules/UI/components/LoginStatus/LoginStatus.js'
+import { OnBoardingComponent } from '../modules/UI/scenes/OnBoarding/OnBoardingComponent.js'
 import { makeCoreContext } from '../util/makeContext.js'
 import * as CONTEXT_API from './Core/Context/api'
 import { styles } from './style.js'
@@ -68,8 +70,7 @@ import WalletName from './UI/components/Header/WalletName/WalletNameConnector.js
 import HelpModal from './UI/components/HelpModal'
 import { passwordReminderModalConnector as PasswordReminderModal } from './UI/components/PasswordReminderModal/indexPasswordReminderModal.js'
 import TransactionAlert from './UI/components/TransactionAlert/TransactionAlertConnector'
-import type { Permission } from './UI/permissions.js'
-import { CAMERA, CONTACTS } from './UI/permissions.js'
+import { CAMERA, CONTACTS, type Permission } from './UI/permissions.js'
 import AddToken from './UI/scenes/AddToken/AddTokenConnector.js'
 import ChangeMiningFeeExchange from './UI/scenes/ChangeMiningFee/ChangeMiningFeeExchangeConnector.ui'
 import ChangeMiningFeeSendConfirmation from './UI/scenes/ChangeMiningFee/ChangeMiningFeeSendConfirmationConnector.ui'
@@ -90,6 +91,7 @@ import SendConfirmationOptions from './UI/scenes/SendConfirmation/SendConfirmati
 import CurrencySettings from './UI/scenes/Settings/CurrencySettingsConnector'
 import DefaultFiatSettingConnector from './UI/scenes/Settings/DefaultFiatSettingConnector'
 import SettingsOverview from './UI/scenes/Settings/SettingsOverviewConnector'
+import SpendingLimitsConnector from './UI/scenes/SpendingLimits/SpendingLimitsConnector.js'
 import TransactionDetails from './UI/scenes/TransactionDetails/TransactionDetailsConnector.js'
 import TransactionListConnector from './UI/scenes/TransactionList/TransactionListConnector'
 import { HwBackButtonHandler } from './UI/scenes/WalletList/components/HwBackButtonHandler'
@@ -171,7 +173,7 @@ type Props = {
   username?: string,
   addCurrencyPlugin: EdgeCurrencyPlugin => void,
   setKeyboardHeight: number => void,
-  addContext: EdgeContext => void,
+  addContext: (EdgeContext, DiskletFolder) => void,
   addUsernames: (Array<string>) => void,
   setDeviceDimensions: any => void,
   dispatchEnableScan: () => void,
@@ -184,10 +186,10 @@ type State = {
   context: ?EdgeContext
 }
 
-async function queryUtilServer (context: EdgeContext, usernames: Array<string>) {
+async function queryUtilServer (context: EdgeContext, folder: DiskletFolder, usernames: Array<string>) {
   let jsonObj: null | Object = null
   try {
-    const json = await context.io.folder.file(UTILITY_SERVER_FILE).getText()
+    const json = await folder.file(UTILITY_SERVER_FILE).getText()
     jsonObj = JSON.parse(json)
   } catch (err) {
     console.log(err)
@@ -202,14 +204,14 @@ async function queryUtilServer (context: EdgeContext, usernames: Array<string>) 
   if (usernames.length === 0 && !jsonObj) {
     // New app launch. Query the utility server for referral information
     try {
-      const response = await context.io.fetch('https://util1.edge.app/ref')
+      const response = await fetch('https://util1.edge.app/ref')
       if (response) {
         const util = await response.json()
         if (util.currencyCode) {
           global.currencyCode = util.currencyCode
         }
         // Save util data
-        context.io.folder.file(UTILITY_SERVER_FILE).setText(JSON.stringify(util))
+        folder.file(UTILITY_SERVER_FILE).setText(JSON.stringify(util))
       }
     } catch (e) {
       console.log(e)
@@ -230,7 +232,7 @@ export default class Main extends Component<Props, State> {
     }
   }
 
-  componentWillMount () {
+  UNSAFE_componentWillMount () {
     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow)
     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide)
   }
@@ -245,12 +247,14 @@ export default class Main extends Component<Props, State> {
     global.firebase && global.firebase.analytics().setUserId(id)
     global.firebase && global.firebase.analytics().logEvent(`Start_App`)
     makeCoreContext(this.props.contextCallbacks, pluginFactories).then(context => {
+      const folder = makeReactNativeFolder()
+
       // Put the context into Redux:
-      this.props.addContext(context)
+      this.props.addContext(context, folder)
 
       CONTEXT_API.listUsernames(context).then(usernames => {
         this.props.addUsernames(usernames)
-        queryUtilServer(context, usernames)
+        queryUtilServer(context, folder, usernames)
       })
       setIntlLocale(localeInfo)
       selectLocale(DeviceInfo.getDeviceLocale())
@@ -300,6 +304,7 @@ export default class Main extends Component<Props, State> {
               <Stack key={Constants.ROOT} hideNavBar panHandlers={null}>
                 <Scene key={Constants.LOGIN} initial component={LoginConnector} username={this.props.username} />
 
+                <Scene key={Constants.ONBOARDING} navTransparent={true} component={OnBoardingComponent} />
                 <Scene
                   key={Constants.TRANSACTION_DETAILS}
                   navTransparent={true}
@@ -411,7 +416,7 @@ export default class Main extends Component<Props, State> {
                         <Scene
                           key={Constants.TRANSACTIONS_EXPORT}
                           navTransparent={true}
-                          component={TransactionsExportSceneConnector}
+                          component={ifLoggedIn(TransactionsExportSceneConnector, LoadingScene)}
                           renderTitle={this.renderTitle(TRANSACTIONS_EXPORT)}
                           renderLeftButton={this.renderBackButton(WALLETS)}
                           renderRightButton={this.renderEmptyButton()}
@@ -588,7 +593,7 @@ export default class Main extends Component<Props, State> {
                       <Scene
                         key={Constants.PLUGIN}
                         navTransparent={true}
-                        component={PluginView}
+                        component={ifLoggedIn(PluginView, LoadingScene)}
                         renderTitle={this.renderTitle(PLUGIN_BUYSELL)}
                         renderLeftButton={renderPluginBackButton(BACK)}
                         renderRightButton={this.renderEmptyButton()}

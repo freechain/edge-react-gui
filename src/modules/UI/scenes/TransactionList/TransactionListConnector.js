@@ -1,18 +1,18 @@
 // @flow
 
+import type { EdgeCurrencyInfo, EdgeCurrencyWallet } from 'edge-core-js'
 import _ from 'lodash'
 import { connect } from 'react-redux'
 
 import * as CORE_SELECTORS from '../../../Core/selectors.js'
-import { getNumTransactions } from '../../../Core/Wallets/api.js'
 import type { Dispatch, State } from '../../../ReduxTypes'
 import * as UTILS from '../../../utils'
 import * as UI_SELECTORS from '../../selectors.js'
 import * as SETTINGS_SELECTORS from '../../Settings/selectors.js'
-import { fetchMoreTransactions } from './action'
 import { toggleAccountBalanceVisibility } from '../WalletList/action.js'
-import { type DispatchProps, type StateProps, TransactionList } from './TransactionList.ui'
-import type { EdgeCurrencyWallet, EdgeCurrencyInfo } from 'edge-core-js'
+import { fetchMoreTransactions } from './action'
+import type { DispatchProps, StateProps } from './TransactionList.ui'
+import { TransactionList } from './TransactionList.ui'
 
 const mapStateToProps = (state: State) => {
   const selectedWalletId = UI_SELECTORS.getSelectedWalletId(state)
@@ -28,7 +28,7 @@ const mapStateToProps = (state: State) => {
   const isoFiatCurrencyCode = wallet.isoFiatCurrencyCode
   const fiatCurrencyCode = wallet.fiatCurrencyCode
   const balanceInCrypto = wallet.nativeBalances[currencyCode]
-  const numTransactions = getNumTransactions(coreWallet, currencyCode)
+  const numTransactions = state.ui.scenes.transactionList.numTransactions
   const settings = SETTINGS_SELECTORS.getSettings(state)
   const currencyConverter = CORE_SELECTORS.getCurrencyConverter(state)
   const transactions = UI_SELECTORS.getTransactions(state)

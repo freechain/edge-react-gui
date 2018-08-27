@@ -1,10 +1,10 @@
 // @flow
 
-import slowlog from 'react-native-slowlog'
 import { bns } from 'biggystring'
 import type { EdgeCurrencyInfo, EdgeDenomination, EdgeMetadata, EdgeTransaction } from 'edge-core-js'
 import React, { Component } from 'react'
 import { Animated, Easing, Keyboard, ScrollView, TextInput, TouchableOpacity, View } from 'react-native'
+import slowlog from 'react-native-slowlog'
 import { sprintf } from 'sprintf-js'
 import { AdvancedTransactionDetailsModal } from './components/AdvancedDetailsModal/AdvancedTransactionDetailsModal.ui.js'
 import { scale } from '../../../../lib/scaling.js'
@@ -428,7 +428,7 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
     this.props.getSubcategories()
   }
 
-  componentWillMount () {
+  UNSAFE_componentWillMount () {
     // check if metaToken, is not then do not set walletDefaultProps to anything other than initial blank values
     if (UTILS.isCryptoParentCurrency(this.guiWallet, this.props.edgeTransaction.currencyCode)) {
       this.setState({ walletDefaultDenomProps: UTILS.getWalletDefaultDenomProps(this.guiWallet, this.props.settings) })

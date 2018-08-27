@@ -1,23 +1,16 @@
 // @flow
 
 import { bns, div, eq, gte, mul, toFixed } from 'biggystring'
-import type {
-  EdgeCurrencyInfo,
-  EdgeCurrencyPlugin,
-  EdgeCurrencyWallet,
-  EdgeDenomination,
-  EdgeMetaToken,
-  EdgeReceiveAddress,
-  EdgeTransaction
-} from 'edge-core-js'
+import type { EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken, EdgeReceiveAddress, EdgeTransaction } from 'edge-core-js'
 import _ from 'lodash'
-import type { State } from './ReduxTypes'
 import { Platform } from 'react-native'
-import { getCurrencyConverter } from './Core/selectors.js'
-import { intl } from '../locales/intl.js'
+
 import { FIAT_CODES_SYMBOLS as currencySymbolMap, getSymbolFromCurrency } from '../constants/indexConstants.js'
+import { intl } from '../locales/intl.js'
 import borderColors from '../theme/variables/css3Colors'
 import type { CustomTokenInfo, ExchangeData, GuiDenomination, GuiWallet } from '../types'
+import { getCurrencyConverter } from './Core/selectors.js'
+import type { State } from './ReduxTypes'
 
 const DIVIDE_PRECISION = 18
 
@@ -99,7 +92,7 @@ export const inputBottomPadding = () => {
 
 // will take the metaTokens property on the wallet (that comes from currencyInfo), merge with account-level custom tokens added, and only return if enabled (wallet-specific)
 // $FlowFixMe
-export const mergeTokens = (preferredEdgeMetaTokens: Array<EdgeMetaToken | CustomTokenInfo>, edgeMetaTokens: Array<CustomTokenInfo>) => {
+export const mergeTokens = (preferredEdgeMetaTokens: Array<$ReadOnly<EdgeMetaToken | CustomTokenInfo>>, edgeMetaTokens: Array<CustomTokenInfo>) => {
   const tokensEnabled = [...preferredEdgeMetaTokens] // initially set the array to currencyInfo (from plugin), since it takes priority
   for (const x of edgeMetaTokens) {
     // loops through the account-level array
@@ -201,7 +194,7 @@ export const getCurrencyAccountFiatBalanceFromWallet = (wallet: GuiWallet, curre
   const cryptoAmount = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
   const currencyConverter = getCurrencyConverter(state)
   const unformattedFiatValue = currencyConverter.convertCurrency(currencyCode, 'iso:' + settings.defaultFiat, cryptoAmount)
-  const formattedFiatValue = intl.formatNumber(unformattedFiatValue, {toFixed: 2})
+  const formattedFiatValue = intl.formatNumber(unformattedFiatValue, { toFixed: 2 })
   return formattedFiatValue || '0'
 }
 
@@ -226,7 +219,7 @@ export const getCurrencyWalletFiatBalanceFromWallet = (wallet: GuiWallet, curren
   const cryptoAmount = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
   const currencyConverter = getCurrencyConverter(state)
   const unformattedFiatValue = currencyConverter.convertCurrency(currencyCode, wallet.isoFiatCurrencyCode, cryptoAmount)
-  const formattedFiatValue = intl.formatNumber(unformattedFiatValue, {toFixed: 2})
+  const formattedFiatValue = intl.formatNumber(unformattedFiatValue, { toFixed: 2 })
   return formattedFiatValue || '0'
 }
 
@@ -264,7 +257,9 @@ export const convertDisplayToNative = (nativeToDisplayRatio: string) => (display
 
 export const isCryptoParentCurrency = (wallet: GuiWallet, currencyCode: string) => currencyCode === wallet.currencyCode
 
-export const getNewArrayWithoutItem = (array: Array<any>, targetItem: any) => array.filter(item => item !== targetItem)
+export function getNewArrayWithoutItem<T> (array: Array<T>, targetItem: T): Array<T> {
+  return array.filter(item => item !== targetItem)
+}
 
 export const getNewArrayWithItem = (array: Array<any>, item: any) => (!array.includes(item) ? [...array, item] : array)
 
@@ -342,9 +337,8 @@ export const unspacedLowercase = (input: string) => {
   return newInput
 }
 
-export const getCurrencyInfo = (plugins: Array<EdgeCurrencyPlugin>, currencyCode: string): EdgeCurrencyInfo | void => {
-  for (const plugin of plugins) {
-    const info = plugin.currencyInfo
+export const getCurrencyInfo = (allCurrencyInfos: Array<EdgeCurrencyInfo>, currencyCode: string): EdgeCurrencyInfo | void => {
+  for (const info of allCurrencyInfos) {
     for (const denomination of info.denominations) {
       if (denomination.name === currencyCode) {
         return info
@@ -381,7 +375,7 @@ export const isReceivedTransaction = (edgeTransaction: EdgeTransaction): boolean
   return !isSentTransaction(edgeTransaction)
 }
 export const isSentTransaction = (edgeTransaction: EdgeTransaction): boolean => {
-  return (!!edgeTransaction.nativeAmount && (edgeTransaction.nativeAmount.charAt(0) === '-'))
+  return !!edgeTransaction.nativeAmount && edgeTransaction.nativeAmount.charAt(0) === '-'
 }
 
 export const getTimeMeasurement = (inMinutes: number): string => {
@@ -541,9 +535,7 @@ export function getObjectDiff (obj1: Object, obj2: Object, traverseObjects?: Obj
     }
   }
   for (const e in obj2) {
-    if (
-      (comparedElements && comparedElements[e]) ||
-      (ignoreObjects && ignoreObjects[e])) {
+    if ((comparedElements && comparedElements[e]) || (ignoreObjects && ignoreObjects[e])) {
       continue
     }
     if (obj2.hasOwnProperty(e)) {
