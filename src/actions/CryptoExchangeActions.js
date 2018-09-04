@@ -360,22 +360,26 @@ const getShiftTransaction = (fromWallet: GuiWallet, toWallet: GuiWallet, whichWa
     // $FlowFixMe
     const nativeToDisplayRatio = displayDenomination.multiplier
     const displayMax = UTILS.convertNativeToDisplay(nativeToDisplayRatio)(nativeMax)
-    const errorMessage = sprintf(s.strings.amount_above_limit, displayMax)
+    const errorMessage = sprintf(s.strings.amount_above_limit, displayMax, fromCurrencyCode)
     console.log(`getShiftTransaction:above limit`)
     holderObject.processingCounter++
     holderObject.status = 'finished'
-    throw Error(errorMessage)
+    dispatch(actions.dispatchAction(Constants.DONE_MAKE_SPEND))
+    dispatch(actions.dispatchActionString(Constants.GENERIC_SHAPE_SHIFT_ERROR, errorMessage))
+    return
   }
   if (isBelowLimit) {
     const displayDenomination = SETTINGS_SELECTORS.getDisplayDenomination(state, fromCurrencyCode)
     // $FlowFixMe
     const nativeToDisplayRatio = displayDenomination.multiplier
     const displayMin = UTILS.convertNativeToDisplay(nativeToDisplayRatio)(nativeMin)
-    const errorMessage = sprintf(s.strings.amount_below_limit, displayMin)
+    const errorMessage = sprintf(s.strings.amount_below_limit, displayMin, fromCurrencyCode)
     holderObject.processingCounter++
     holderObject.status = 'finished'
     console.log(`getShiftTransaction:below limit`)
-    throw Error(errorMessage)
+    dispatch(actions.dispatchAction(Constants.DONE_MAKE_SPEND))
+    dispatch(actions.dispatchActionString(Constants.GENERIC_SHAPE_SHIFT_ERROR, errorMessage))
+    return
   }
 
   if (holderObject.status === 'delay') {
@@ -564,9 +568,11 @@ export const selectWalletForExchange = (walletId: string, currencyCode: string) 
   const wallet = state.ui.wallets.byId[walletId]
   switch (state.cryptoExchange.changeWallet) {
     case Constants.TO:
-      return dispatch(selectToFromWallet(Constants.SELECT_TO_WALLET_CRYPTO_EXCHANGE, wallet, currencyCode))
+      dispatch(selectToFromWallet(Constants.SELECT_TO_WALLET_CRYPTO_EXCHANGE, wallet, currencyCode))
+      break
     case Constants.FROM:
-      return dispatch(selectToFromWallet(Constants.SELECT_FROM_WALLET_CRYPTO_EXCHANGE, wallet, currencyCode))
+      dispatch(selectToFromWallet(Constants.SELECT_FROM_WALLET_CRYPTO_EXCHANGE, wallet, currencyCode))
+      break
     default:
   }
 }

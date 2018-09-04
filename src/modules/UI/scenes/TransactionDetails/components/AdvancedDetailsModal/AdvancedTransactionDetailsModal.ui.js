@@ -1,11 +1,12 @@
 // @flow
 
 import React, { Component } from 'react'
-import { Linking, TouchableOpacity } from 'react-native'
+import { Alert, Clipboard, Linking, TouchableOpacity } from 'react-native'
 
 import * as Constants from '../../../../../../constants/indexConstants.js'
 import s from '../../../../../../locales/strings.js'
-import Text from '../../../../components/FormattedTextScaled'
+import { PrimaryButton } from '../../../../components/Buttons/PrimaryButton.ui.js'
+import Text from '../../../../components/FormattedText/FormattedText.ui.js'
 import { Icon } from '../../../../components/Icon/Icon.ui.js'
 import { InteractiveModal } from '../../../../components/Modals/InteractiveModal/InteractiveModal.ui.js'
 import styles, { activeOpacity } from '../../style.js'
@@ -28,6 +29,13 @@ export class AdvancedTransactionDetailsModal extends Component<AdvancedTransacti
     }
   }
 
+  copyToClipboard = () => {
+    Clipboard.setString(this.props.txid)
+    Alert.alert(s.strings.transaction_details_copy_txid_title, s.strings.transaction_details_copy_txid_message, [
+      { text: s.strings.string_ok, onPress: this.props.onExit }
+    ])
+  }
+
   render () {
     return (
       <InteractiveModal
@@ -45,7 +53,9 @@ export class AdvancedTransactionDetailsModal extends Component<AdvancedTransacti
         </InteractiveModal.Title>
 
         <InteractiveModal.Body>
-          <InteractiveModal.Description style={{ textAlign: 'center' }}><Text>{this.props.txid}</Text></InteractiveModal.Description>
+          <InteractiveModal.Description style={{ textAlign: 'center' }}>
+            <Text>{this.props.txid}</Text>
+          </InteractiveModal.Description>
         </InteractiveModal.Body>
 
         <InteractiveModal.Footer>
@@ -54,6 +64,13 @@ export class AdvancedTransactionDetailsModal extends Component<AdvancedTransacti
               <TouchableOpacity onPress={this.handleClick} style={styles.blockExplorerButton} activeOpacity={activeOpacity}>
                 <Text style={styles.blockExplorerButtonText}>{s.strings.transaction_details_show_advanced_block_explorer}</Text>
               </TouchableOpacity>
+            </InteractiveModal.Item>
+          </InteractiveModal.Row>
+          <InteractiveModal.Row>
+            <InteractiveModal.Item>
+              <PrimaryButton onPress={this.copyToClipboard} style={{ flex: -1 }}>
+                <PrimaryButton.Text>{s.strings.fragment_request_copy_title}</PrimaryButton.Text>
+              </PrimaryButton>
             </InteractiveModal.Item>
           </InteractiveModal.Row>
         </InteractiveModal.Footer>

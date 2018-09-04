@@ -8,6 +8,7 @@ import slowlog from 'react-native-slowlog'
 import { sprintf } from 'sprintf-js'
 
 import { scale } from '../../../../lib/scaling.js'
+import { intl } from '../../../../locales/intl'
 import s from '../../../../locales/strings.js'
 import THEME from '../../../../theme/variables/airbitz'
 import { PLATFORM } from '../../../../theme/variables/platform.js'
@@ -112,7 +113,7 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
     let subCategory = ''
     let cat = ''
     let name = ''
-    let amountFiat = '0.00'
+    let amountFiat = intl.formatNumber('0.00')
     let notes = ''
     const direction = parseInt(props.edgeTransaction.nativeAmount) >= 0 ? 'receive' : 'send'
     if (props.edgeTransaction.wallet) {
@@ -128,8 +129,8 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
       notes = props.edgeTransaction.metadata.notes ? props.edgeTransaction.metadata.notes : ''
       if (props.edgeTransaction.metadata.amountFiat) {
         const initial = props.edgeTransaction.metadata.amountFiat.toFixed(2)
-        amountFiat = bns.abs(initial)
-        amountFiat = bns.toFixed(amountFiat, 2, 2)
+        const absoluteAmountFiat = bns.abs(initial)
+        amountFiat = intl.formatNumber(bns.toFixed(absoluteAmountFiat, 2, 2))
       }
     }
 
@@ -255,7 +256,7 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
       const absoluteAmountFiatOneDecimal = bns.abs(amountFiatOneDecimal)
       amountFiat = bns.toFixed(absoluteAmountFiatOneDecimal, 2, 2)
     } else {
-      amountFiat = '0.00'
+      amountFiat = intl.formatNumber('0.00')
     }
     this.setState({
       amountFiat
@@ -385,7 +386,8 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
   }
 
   onFocusFiatAmount = () => {
-    if (this.state.amountFiat === '0.00') {
+    const { amountFiat } = this.state
+    if (amountFiat === '0.00' || amountFiat === '0,00') {
       this.setState({
         amountFiat: ''
       })
@@ -419,7 +421,7 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
     const { name, notes, bizId, miscJson } = this.state
     const txid = this.props.edgeTransaction.txid
     const newAmountFiat = this.state.amountFiat
-    const amountFiat: number = !newAmountFiat ? 0.0 : Number.parseFloat(newAmountFiat)
+    const amountFiat: number = !newAmountFiat ? 0.0 : Number.parseFloat(newAmountFiat.replace(',', '.'))
     const edgeMetadata: EdgeMetadata = { name, category, notes, amountFiat, bizId, miscJson }
     this.props.setTransactionDetails(txid, this.props.edgeTransaction.currencyCode, edgeMetadata)
   }
@@ -610,6 +612,7 @@ export class TransactionDetails extends Component<TransactionDetailsProps, State
                   />
                 </View>
               </View>
+              <View style={{ height: 300 }} />
             </ScrollView>
           </View>
         </View>
